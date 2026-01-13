@@ -162,21 +162,6 @@ bun run build
 bun run lint
 ```
 
-### 项目结构
-
-```
-src/
-├── electron/           # 主进程
-│   ├── main.ts         # 应用入口，窗口管理
-│   ├── ipc-handlers.ts # IPC 事件处理
-│   └── libs/
-│       ├── runner.ts       # Claude SDK 集成
-│       └── session-store.ts # SQLite 持久化
-└── ui/                 # 渲染进程 (React)
-    ├── App.tsx         # 主应用组件
-    ├── store/          # Zustand 状态管理
-    └── components/     # UI 组件
-```
 
 ---
 
