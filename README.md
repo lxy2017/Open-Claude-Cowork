@@ -12,7 +12,9 @@ It is **fully compatible with the exact same configuration as Claude Code**, whi
 
 An example of organizing a local folder:
 
-https://github.com/user-attachments/assets/694430fb-9d4b-452e-8429-d9c565082f43
+
+https://github.com/user-attachments/assets/8ce58c8b-4024-4c01-82ee-f8d8ed6d4bba
+
 
 ---
 
