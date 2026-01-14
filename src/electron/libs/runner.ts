@@ -1,7 +1,7 @@
 import { query, type SDKMessage, type PermissionResult } from "@anthropic-ai/claude-agent-sdk";
 import type { ServerEvent } from "../types.js";
 import type { Session } from "./session-store.js";
-import { getClaudeCodePath, getEnhancedEnv} from "./util.js";
+import { claudeCodePath, enhancedEnv} from "./util.js";
 
 
 export type RunnerOptions = {
@@ -40,9 +40,6 @@ export async function runClaude(options: RunnerOptions): Promise<RunnerHandle> {
   // Start the query in the background
   (async () => {
     try {
-      const claudeCodePath = getClaudeCodePath();
-      const enhancedEnv = getEnhancedEnv();
-
       const q = query({
         prompt,
         options: {

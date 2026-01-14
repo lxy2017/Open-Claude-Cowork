@@ -40,8 +40,9 @@ export function getEnhancedEnv(): Record<string, string | undefined> {
     PATH: newPath,
   };
 }
-const claudeCodePath = getClaudeCodePath();
-const enhancedEnv = getEnhancedEnv();
+
+export const claudeCodePath = getClaudeCodePath();
+export const enhancedEnv = getEnhancedEnv();
 
 export const generateSessionTitle = async (userIntent: string | null) => {
   if (!userIntent) return "New Session";
