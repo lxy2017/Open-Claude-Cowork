@@ -8,7 +8,9 @@ import { generateSessionTitle } from "./libs/util.js";
 import type { ClientEvent } from "./types.js";
 import "./libs/claude-settings.js";
 
-function killViteDevServer() {
+let cleanupComplete = false;
+
+function killViteDevServer(): void {
     if (!isDev()) return;
     try {
         if (process.platform === 'win32') {
@@ -21,7 +23,11 @@ function killViteDevServer() {
     }
 }
 
-function cleanup() {
+function cleanup(): void {
+    if (cleanupComplete) return;
+    cleanupComplete = true;
+
+    globalShortcut.unregisterAll();
     stopPolling();
     cleanupAllSessions();
     killViteDevServer();
@@ -34,12 +40,14 @@ app.on("window-all-closed", () => {
     app.quit();
 });
 
-["SIGTERM", "SIGINT", "SIGHUP"].forEach(signal => {
-    process.on(signal, () => {
-        cleanup();
-        app.quit();
-    });
-});
+function handleSignal(): void {
+    cleanup();
+    app.quit();
+}
+
+process.on("SIGTERM", handleSignal);
+process.on("SIGINT", handleSignal);
+process.on("SIGHUP", handleSignal);
 
 app.on("ready", () => {
     const mainWindow = new BrowserWindow({

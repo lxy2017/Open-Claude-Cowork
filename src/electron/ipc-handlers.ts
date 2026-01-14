@@ -220,7 +220,7 @@ export function handleClientEvent(event: ClientEvent) {
   }
 }
 
-export function cleanupAllSessions() {
+export function cleanupAllSessions(): void {
   for (const [, handle] of runnerHandles) {
     handle.abort();
   }

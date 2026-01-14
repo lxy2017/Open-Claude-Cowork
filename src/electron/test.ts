@@ -8,7 +8,7 @@ const POLLING_INTERVAL = 500;
 
 let pollingIntervalId: ReturnType<typeof setInterval> | null = null;
 
-export function pollResources(mainWindow: BrowserWindow) {
+export function pollResources(mainWindow: BrowserWindow): void {
     pollingIntervalId = setInterval(async () => {
         if (mainWindow.isDestroyed()) {
             stopPolling();
@@ -18,7 +18,6 @@ export function pollResources(mainWindow: BrowserWindow) {
         const storageData = getStorageData();
         const ramUsage = getRamUsage();
 
-        // Check again after async operations in case window was destroyed
         if (mainWindow.isDestroyed()) {
             stopPolling();
             return;
@@ -28,7 +27,7 @@ export function pollResources(mainWindow: BrowserWindow) {
     }, POLLING_INTERVAL);
 }
 
-export function stopPolling() {
+export function stopPolling(): void {
     if (pollingIntervalId) {
         clearInterval(pollingIntervalId);
         pollingIntervalId = null;
