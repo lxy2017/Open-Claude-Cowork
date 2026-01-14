@@ -220,4 +220,12 @@ export function handleClientEvent(event: ClientEvent) {
   }
 }
 
+export function cleanupAllSessions() {
+  for (const [, handle] of runnerHandles) {
+    handle.abort();
+  }
+  runnerHandles.clear();
+  sessions.close();
+}
+
 export { sessions };

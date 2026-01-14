@@ -1,11 +1,45 @@
-import { app, BrowserWindow, ipcMain, dialog } from "electron"
+import { app, BrowserWindow, ipcMain, dialog, globalShortcut } from "electron"
+import { execSync } from "child_process";
 import { ipcMainHandle, isDev, DEV_PORT } from "./util.js";
 import { getPreloadPath, getUIPath, getIconPath } from "./pathResolver.js";
-import { getStaticData, pollResources } from "./test.js";
-import { handleClientEvent, sessions } from "./ipc-handlers.js";
+import { getStaticData, pollResources, stopPolling } from "./test.js";
+import { handleClientEvent, sessions, cleanupAllSessions } from "./ipc-handlers.js";
 import { generateSessionTitle } from "./libs/util.js";
 import type { ClientEvent } from "./types.js";
 import "./libs/claude-settings.js";
+
+function killViteDevServer() {
+    if (!isDev()) return;
+    try {
+        if (process.platform === 'win32') {
+            execSync(`for /f "tokens=5" %a in ('netstat -ano ^| findstr :${DEV_PORT}') do taskkill /PID %a /F`, { stdio: 'ignore', shell: 'cmd.exe' });
+        } else {
+            execSync(`lsof -ti:${DEV_PORT} | xargs kill -9 2>/dev/null || true`, { stdio: 'ignore' });
+        }
+    } catch {
+        // Process may already be dead
+    }
+}
+
+function cleanup() {
+    stopPolling();
+    cleanupAllSessions();
+    killViteDevServer();
+}
+
+app.on("before-quit", cleanup);
+app.on("will-quit", cleanup);
+app.on("window-all-closed", () => {
+    cleanup();
+    app.quit();
+});
+
+["SIGTERM", "SIGINT", "SIGHUP"].forEach(signal => {
+    process.on(signal, () => {
+        cleanup();
+        app.quit();
+    });
+});
 
 app.on("ready", () => {
     const mainWindow = new BrowserWindow({
@@ -24,6 +58,11 @@ app.on("ready", () => {
 
     if (isDev()) mainWindow.loadURL(`http://localhost:${DEV_PORT}`)
     else mainWindow.loadFile(getUIPath());
+
+    globalShortcut.register('CommandOrControl+Q', () => {
+        cleanup();
+        app.quit();
+    });
 
     pollResources(mainWindow);
 
