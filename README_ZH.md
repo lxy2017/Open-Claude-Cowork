@@ -7,8 +7,6 @@
 [![Platform](https://img.shields.io/badge/platform-%20macOS%20%7C%20Linux-lightgrey.svg)](https://github.com/DevAgentForge/Claude-Cowork/releases)
 [![Fork](https://img.shields.io/badge/Fork%20From-DevAgentForge%2FClaude--Cowork-green.svg)](https://github.com/DevAgentForge/Claude-Cowork)
 
-> 🔱 **Fork 自 [DevAgentForge/Claude-Cowork](https://github.com/DevAgentForge/Claude-Cowork)**
-
 [英文](README.md)
 
 </div>
