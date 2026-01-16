@@ -21,6 +21,41 @@ With Open Source Claude Cowork, M2.1 takes a concrete step toward our long-term 
 
 ---
 
+## 📋 Changelog
+
+### v0.0.3 (2026-01-16)
+
+#### 🆕 Custom LLM Provider Support (PR #26)
+- **Multi-Model Support**: Added ability to configure custom API providers (Anthropic native API, OpenRouter, LiteLLM, etc.)
+- **Secure Encryption**: API tokens are encrypted using Electron's `safeStorage` for secure credential storage
+- **Auto Environment Mapping**: Automatically overrides `ANTHROPIC_BASE_URL` and `ANTHROPIC_AUTH_TOKEN` when custom provider is selected
+- **Model Tiers**: Support for specifying different model names for Opus, Sonnet, and Haiku tiers
+
+#### 🌐 Internationalization & UI Improvements (PR #21)
+- **Multi-Language Support (i18n)**: Introduced internationalization framework with English and Chinese support
+- **UI Polish**:
+  - Optimized sidebar navigation logic
+  - Improved scrollbar styling
+  - Fixed visual flickering during window switching
+
+#### 🔧 Application Stability & Process Management (PR #15)
+- **Reliable Resource Cleanup**: Ensures Vite and Claude Code processes are properly terminated on app exit
+- **Startup Fix**: Resolved Claude Code initialization failures in Electron environment
+- **Race Condition Fix**: Fixed window display race conditions
+
+#### 🛠 Developer Tools & Build Scripts
+- **One-Click Scripts**: Added `start.sh` (quick start) and `build-dmg.sh` (macOS packaging)
+- **Smart Package Manager Detection**: Automatically detects and uses bun or npm
+- **Build Optimization**: Updated TypeScript configuration for improved compilation stability
+
+#### 🔒 Code Quality & Security Enhancements
+- **Path Validation Fix**: Rewrote `sanitizePath` function to fix path corruption bug
+- **Provider Validation**: Added URL format validation to ensure correct configuration
+- **Multi-Platform Support**: Smart Node.js path detection for ARM/Intel Mac and Linux
+- **Error Handling**: Improved encryption/decryption error logging, graceful window load failure handling
+
+---
+
 # About Open Claude Cowork
 
 A **desktop AI assistant** that helps you with **programming, file management, and any task you can describe**.

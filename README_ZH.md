@@ -10,14 +10,40 @@
 
 </div>
 
-## ❤️ 合作
+---
 
-[![MiniMax](assets/partners/minimax_banner.jpg)](https://platform.minimaxi.com/subscribe/coding-plan?code=6uFnRx7O0W&source=link)
+## 📋 更新记录
 
-MiniMax-M2.1 是一款开源的 SOTA（当前最先进）模型，在编程能力、数字环境操作以及处理长流程、多步骤任务方面表现出色。
-通过 开源的 Claude Cowork 替代方案，M2.1 朝着我们“通用生产力 AI”的长期愿景迈出了坚实一步，让先进的 AI 能力真正触达每一个人。
+### v0.0.3 (2026-01-16)
 
-[点击](https://platform.minimaxi.com/subscribe/coding-plan?code=6uFnRx7O0W&source=link)即可享受 MiniMax 编程计划专属 12% 折扣
+#### 🆕 自定义 LLM 供应商支持 (PR #26)
+- **多模型支持**：新增配置自定义 API 供应商的功能（Anthropic 原生 API、OpenRouter、LiteLLM 等）
+- **安全加密**：API Token 使用 Electron `safeStorage` 加密存储，凭据安全有保障
+- **环境变量自动映射**：选择自定义供应商后，自动重写 `ANTHROPIC_BASE_URL` 和 `ANTHROPIC_AUTH_TOKEN` 等环境变量
+- **模型分级**：支持为 Opus、Sonnet、Haiku 三个等级指定不同的模型名称
+
+#### 🌐 国际化与 UI 体验优化 (PR #21)
+- **多语言支持 (i18n)**：引入国际化框架，支持中英文切换
+- **UI 细节打磨**：
+  - 优化侧边栏导航逻辑
+  - 改进滚动条样式
+  - 修复窗口切换时的视觉闪烁问题
+
+#### 🔧 应用稳定性与进程管理 (PR #15)
+- **可靠的资源清理**：确保关闭应用时 Vite 和 Claude Code 进程被彻底关闭
+- **启动异常修复**：解决 Claude Code 在 Electron 环境下初始化失败的问题
+- **竞态条件修复**：修复窗口显示时的 Race Condition
+
+#### 🛠 开发者工具与构建脚本
+- **一键式脚本**：新增 `start.sh`（快速启动）和 `build-dmg.sh`（快速打包 macOS 安装包）
+- **智能包管理器检测**：自动检测并使用 bun 或 npm
+- **构建优化**：更新 TypeScript 配置，提升编译稳定性
+
+#### 🔒 代码质量与安全增强
+- **路径验证修复**：重写 `sanitizePath` 函数，修复路径破坏 bug
+- **Provider 验证**：新增 URL 格式验证，确保配置正确
+- **多平台支持**：智能检测 Node.js 路径，支持 ARM/Intel Mac 和 Linux
+- **错误处理增强**：改进加密/解密错误日志，窗口加载失败时优雅处理
 
 ---
 
