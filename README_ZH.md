@@ -13,6 +13,8 @@
 
 </div>
 
+![Architecture](docs/Gemini_Generated_Image_rt8y3mrt8y3mrt8y.png)
+
 ---
 
 ## 📋 更新记录

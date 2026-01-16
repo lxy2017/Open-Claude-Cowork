@@ -13,6 +13,8 @@
 
 </div>
 
+![Architecture](docs/Gemini_Generated_Image_21vt9021vt9021vt.png)
+
 ---
 
 ## 📋 Changelog

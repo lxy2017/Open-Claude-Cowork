@@ -40,9 +40,9 @@ $BUILD_CMD
 
 if [ $? -eq 0 ]; then
     echo "✅ Build successful!"
-    echo "📂 You can find your DMG in the 'release' folder."
-    # Open the release folder in Finder
-    open release
+    echo "📂 You can find your DMG in the 'dist' folder."
+    # Open the dist folder in Finder
+    open dist
 else
     echo "❌ Build failed. Please check the logs above."
     exit 1
