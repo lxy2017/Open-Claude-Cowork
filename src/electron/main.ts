@@ -18,14 +18,19 @@ let cleanupComplete = false;
 function killViteDevServer(): void {
     if (!isDev()) return;
     try {
-        console.log('[Main] Killing Vite dev server...');
+        console.log(`[Main] Cleaning up Vite dev server on port ${DEV_PORT}...`);
         if (process.platform === 'win32') {
-            execSync(`for /f "tokens=5" %a in ('netstat -ano ^| findstr :${DEV_PORT}') do taskkill /PID %a /F`, { stdio: 'ignore', shell: 'cmd.exe' });
+            // Windows: find and kill process by port
+            execSync(`for /f "tokens=5" %a in ('netstat -ano ^| findstr :${DEV_PORT} ^| findstr LISTENING') do taskkill /PID %a /F 2>nul`, { stdio: 'ignore', shell: 'cmd.exe' });
         } else {
-            execSync(`lsof -ti:${DEV_PORT} | xargs kill -9 2>/dev/null || true`, { stdio: 'ignore' });
+            // Unix: use lsof to find process by port, then kill
+            // Only kill if the process exists (graceful)
+            execSync(`lsof -ti:${DEV_PORT} | xargs kill 2>/dev/null || true`, { stdio: 'ignore' });
         }
+        console.log('[Main] Vite dev server cleanup completed');
     } catch (e) {
-        // Process may already be dead
+        // Process may already be dead or port not in use
+        console.log('[Main] Vite dev server cleanup: no process found or already terminated');
     }
 }
 

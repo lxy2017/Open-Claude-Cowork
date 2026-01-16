@@ -119,7 +119,9 @@ This means your custom configuration takes precedence over the default Claude Co
 
 ## Security Notes
 
-- API keys are stored locally in `~/Library/Application Support/Agent Cowork/providers.json` (macOS)
+- **Encrypted Storage**: API keys are encrypted using Electron's `safeStorage` API before being stored locally in `~/Library/Application Support/Agent Cowork/providers.json` (macOS)
+- **Platform Security**: The encryption uses the operating system's secure credential storage (Keychain on macOS, Credential Manager on Windows)
+- **File Permissions**: The providers file is created with restrictive permissions (owner read/write only)
 - Never share your configuration files containing API keys
 - Consider using environment variables or secret management for production use
 

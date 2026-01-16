@@ -1,4 +1,5 @@
 import Database from "better-sqlite3";
+import { normalize, isAbsolute } from "path";
 import type { SessionStatus, StreamMessage } from "../types.js";
 
 export type PendingPermission = {
@@ -249,15 +250,45 @@ export class SessionStore {
 
   /**
    * Sanitize path to prevent path traversal attacks (CWE-22)
+   * Note: We allow absolute paths since users can select directories via dialog.
+   * We only prevent path traversal sequences that could escape the intended directory.
    */
-  private sanitizePath(path: string): string {
-    // Normalize the path and resolve to absolute
-    const normalized = path.replace(/[^\w\s\-\.]/g, "");
-    // Ensure path doesn't contain dangerous sequences
-    if (normalized.includes("..") || normalized.startsWith("/") || /^[a-z]:\\/i.test(normalized)) {
-      throw new Error("Invalid path: path traversal or absolute paths not allowed");
+  private sanitizePath(inputPath: string): string {
+    if (!inputPath || inputPath.trim().length === 0) {
+      throw new Error("Invalid path: path cannot be empty");
     }
-    return normalized;
+
+    // Normalize the path to resolve . and .. sequences
+    const normalizedPath = normalize(inputPath);
+
+    // Check for path traversal attempts in the normalized path
+    // After normalization, ".." should not appear in a legitimate path
+    // that doesn't try to escape its root
+    const pathParts = normalizedPath.split(/[/\\]/);
+
+    // If the path starts with ".." or contains ".." after an empty segment (root)
+    // it might be trying to escape - but we allow absolute paths
+    if (!isAbsolute(normalizedPath)) {
+      // For relative paths, check if they try to go up beyond the starting point
+      let depth = 0;
+      for (const part of pathParts) {
+        if (part === "..") {
+          depth--;
+          if (depth < 0) {
+            throw new Error("Invalid path: path traversal not allowed");
+          }
+        } else if (part !== "" && part !== ".") {
+          depth++;
+        }
+      }
+    }
+
+    // For absolute paths, just ensure no null bytes or other dangerous characters
+    if (normalizedPath.includes("\0")) {
+      throw new Error("Invalid path: null bytes not allowed");
+    }
+
+    return normalizedPath;
   }
 
   private loadSessions(): void {

@@ -44,18 +44,45 @@ export class WindowManager {
     async initialize(): Promise<void> {
         this.mainWindow = this.createWindow();
 
+        // Show window when ready (prevents flash of white screen)
         this.mainWindow.once("ready-to-show", () => {
             console.log('[WindowManager] Window ready-to-show');
             this.mainWindow?.show();
             this.mainWindow?.focus();
         });
 
+        // Handle page load failures gracefully
+        this.mainWindow.webContents.on('did-fail-load', (_event, errorCode, errorDescription, validatedURL) => {
+            console.error(`[WindowManager] Failed to load ${validatedURL}: ${errorDescription} (code: ${errorCode})`);
+            // Still show the window so user can see something went wrong
+            if (this.mainWindow && !this.mainWindow.isVisible()) {
+                this.mainWindow.show();
+            }
+        });
+
+        // Log console messages in development
         if (isDev()) {
-            console.log(`[WindowManager] Loading dev URL: http://localhost:${DEV_PORT}`);
-            await this.mainWindow.loadURL(`http://localhost:${DEV_PORT}`);
-        } else {
-            console.log(`[WindowManager] Loading production UI: ${getUIPath()}`);
-            await this.mainWindow.loadFile(getUIPath());
+            this.mainWindow.webContents.on('console-message', (_event, level, message, line, sourceId) => {
+                const levels = ['LOG', 'WARN', 'ERROR'];
+                console.log(`[Renderer ${levels[level] || 'LOG'}] ${message} (${sourceId}:${line})`);
+            });
+        }
+
+        try {
+            if (isDev()) {
+                console.log(`[WindowManager] Loading dev URL: http://localhost:${DEV_PORT}`);
+                await this.mainWindow.loadURL(`http://localhost:${DEV_PORT}`);
+            } else {
+                console.log(`[WindowManager] Loading production UI: ${getUIPath()}`);
+                await this.mainWindow.loadFile(getUIPath());
+            }
+        } catch (error) {
+            console.error('[WindowManager] Failed to load content:', error);
+            // Ensure window is visible even if loading failed
+            if (this.mainWindow && !this.mainWindow.isVisible()) {
+                this.mainWindow.show();
+            }
+            throw error;
         }
 
         this.mainWindow.on("closed", () => {

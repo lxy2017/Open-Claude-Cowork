@@ -13,9 +13,14 @@ function encryptSensitiveData(provider: LlmProviderConfig): LlmProviderConfig {
   const encrypted = { ...provider };
   if (encrypted.authToken) {
     try {
-      encrypted.authToken = safeStorage.encryptString(encrypted.authToken).toString("base64");
-    } catch {
-      // If encryption fails, keep original (not ideal but don't break functionality)
+      if (safeStorage.isEncryptionAvailable()) {
+        encrypted.authToken = safeStorage.encryptString(encrypted.authToken).toString("base64");
+      } else {
+        console.warn("[Security] safeStorage encryption not available on this platform");
+      }
+    } catch (error) {
+      console.error("[Security] Failed to encrypt auth token:", error);
+      // Still save but log the security concern
     }
   }
   return encrypted;
@@ -28,12 +33,44 @@ function decryptSensitiveData(provider: LlmProviderConfig): LlmProviderConfig {
   const decrypted = { ...provider };
   if (decrypted.authToken) {
     try {
-      decrypted.authToken = safeStorage.decryptString(Buffer.from(decrypted.authToken, "base64"));
+      if (safeStorage.isEncryptionAvailable()) {
+        decrypted.authToken = safeStorage.decryptString(Buffer.from(decrypted.authToken, "base64"));
+      }
     } catch {
-      // If decryption fails, return as-is (may be plaintext from older version)
+      // If decryption fails, return as-is (may be plaintext from older version or different platform)
+      console.warn("[Security] Failed to decrypt auth token, using as-is (may be plaintext)");
     }
   }
   return decrypted;
+}
+
+/**
+ * Validate provider configuration
+ */
+function validateProvider(provider: LlmProviderConfig): { valid: boolean; error?: string } {
+  if (!provider.name || provider.name.trim().length === 0) {
+    return { valid: false, error: "Provider name is required" };
+  }
+
+  if (!provider.baseUrl || provider.baseUrl.trim().length === 0) {
+    return { valid: false, error: "Base URL is required" };
+  }
+
+  // Validate URL format
+  try {
+    const url = new URL(provider.baseUrl);
+    if (!["http:", "https:"].includes(url.protocol)) {
+      return { valid: false, error: "Base URL must use http or https protocol" };
+    }
+  } catch {
+    return { valid: false, error: "Invalid Base URL format" };
+  }
+
+  if (!provider.authToken || provider.authToken.trim().length === 0) {
+    return { valid: false, error: "Auth token is required" };
+  }
+
+  return { valid: true };
 }
 
 export function loadProviders(): LlmProviderConfig[] {
@@ -52,6 +89,12 @@ export function loadProviders(): LlmProviderConfig[] {
 }
 
 export function saveProvider(provider: LlmProviderConfig): LlmProviderConfig {
+  // Validate provider configuration before saving
+  const validation = validateProvider(provider);
+  if (!validation.valid) {
+    throw new Error(`Invalid provider configuration: ${validation.error}`);
+  }
+
   // Reload providers fresh (don't use cached decrypted versions)
   const providers: LlmProviderConfig[] = [];
   try {

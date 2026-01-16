@@ -5,10 +5,26 @@ cd "$(dirname "$0")"
 
 echo "🔨 Building Claude-Cowork DMG for Mac (Silicon)..."
 
+# Detect package manager
+if command -v bun &> /dev/null; then
+    PKG_MANAGER="bun"
+    INSTALL_CMD="bun install"
+    BUILD_CMD="bun run dist:mac"
+elif command -v npm &> /dev/null; then
+    PKG_MANAGER="npm"
+    INSTALL_CMD="npm install"
+    BUILD_CMD="npm run dist:mac"
+else
+    echo "❌ No package manager found. Please install npm or bun."
+    exit 1
+fi
+
+echo "📦 Using package manager: $PKG_MANAGER"
+
 # Check if node_modules exists
 if [ ! -d "node_modules" ]; then
     echo "📦 Installing dependencies..."
-    npm install
+    $INSTALL_CMD
 fi
 
 # Clean up previous builds
@@ -20,7 +36,7 @@ rm -rf release
 
 # Build the application
 echo "🚀 Starting compilation and packaging..."
-npm run dist:mac
+$BUILD_CMD
 
 if [ $? -eq 0 ]; then
     echo "✅ Build successful!"

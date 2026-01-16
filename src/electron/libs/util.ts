@@ -4,6 +4,7 @@ import type { SDKResultMessage } from "@anthropic-ai/claude-agent-sdk";
 import { app } from "electron";
 import { join } from "path";
 import { homedir } from "os";
+import { existsSync } from "fs";
 
 // Get Claude Code CLI path for packaged app
 export function getClaudeCodePath(): string | undefined {
@@ -15,6 +16,38 @@ export function getClaudeCodePath(): string | undefined {
   }
   // In development, we can use the one in node_modules
   return join(app.getAppPath(), 'node_modules/@anthropic-ai/claude-agent-sdk/cli.js');
+}
+
+// Get Node.js executable path with smart detection
+export function getNodePath(): string {
+  // Check environment variable first (allows user override)
+  if (process.env.NODE_EXECUTABLE && existsSync(process.env.NODE_EXECUTABLE)) {
+    return process.env.NODE_EXECUTABLE;
+  }
+
+  // Common Node.js installation paths in order of preference
+  const candidates = [
+    '/opt/homebrew/bin/node',      // macOS ARM (Homebrew)
+    '/usr/local/bin/node',         // macOS Intel (Homebrew) / Linux
+    '/usr/bin/node',               // Linux system
+    join(homedir(), '.nvm/versions/node', process.version, 'bin/node'),  // NVM
+  ];
+
+  for (const candidate of candidates) {
+    if (existsSync(candidate)) {
+      return candidate;
+    }
+  }
+
+  // Fallback: use the current process executable if it's Node
+  // (This works when running in Electron with ELECTRON_RUN_AS_NODE=1)
+  if (process.execPath && process.execPath.includes('node')) {
+    return process.execPath;
+  }
+
+  // Last resort: rely on PATH
+  console.warn('[util] Could not find Node.js executable, falling back to "node" from PATH');
+  return 'node';
 }
 
 // Build enhanced PATH for packaged environment
@@ -42,9 +75,10 @@ export function getEnhancedEnv(): Record<string, string | undefined> {
   };
 }
 
+// Exported constants for convenience
 export const claudeCodePath = getClaudeCodePath();
 export const enhancedEnv = getEnhancedEnv();
-export const nodePath = '/opt/homebrew/bin/node';
+export const nodePath = getNodePath();
 
 export const generateSessionTitle = async (userIntent: string | null) => {
   if (!userIntent) return "New Session";
