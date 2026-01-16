@@ -1,7 +1,8 @@
-import { useCallback, useEffect, useRef } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import type { ClientEvent } from "../types";
 import { useAppStore } from "../store/useAppStore";
+import { getCaretCoordinates, cleanupCaretMirror } from "../utils/caret-coords";
 
 const DEFAULT_ALLOWED_TOOLS = "Read,Edit,Bash";
 const MAX_ROWS = 12;
@@ -62,7 +63,7 @@ export function usePromptActions(sendEvent: (event: ClientEvent) => void) {
       });
     }
     setPrompt("");
-  }, [activeSession, activeSessionId, cwd, prompt, selectedProviderId, sendEvent, setGlobalError, setPendingStart, setPrompt]);
+  }, [activeSession, activeSessionId, cwd, prompt, selectedProviderId, sendEvent, setGlobalError, setPendingStart, setPrompt, t]);
 
   const handleStop = useCallback(() => {
     if (!activeSessionId) return;
@@ -75,24 +76,107 @@ export function usePromptActions(sendEvent: (event: ClientEvent) => void) {
       return;
     }
     handleSend();
-  }, [cwd, handleSend, setGlobalError]);
+  }, [cwd, handleSend, setGlobalError, t]);
 
   return { prompt, setPrompt, isRunning, handleSend, handleStop, handleStartFromModal };
+}
+
+// Custom hook for smooth caret position tracking with RAF throttling
+function useCaretPosition(textareaRef: React.RefObject<HTMLTextAreaElement | null>) {
+  const [caretPos, setCaretPos] = useState({ top: 0, left: 0, height: 20 });
+  const [isTypingFast, setIsTypingFast] = useState(false);
+  const rafRef = useRef<number | null>(null);
+  const lastUpdateTime = useRef(0);
+  const typingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const updateCaretPosition = useCallback(() => {
+    if (!textareaRef.current) return;
+
+    const textarea = textareaRef.current;
+    const { selectionEnd } = textarea;
+    const coords = getCaretCoordinates(textarea, selectionEnd);
+
+    const scrollTop = textarea.scrollTop;
+    const scrollLeft = textarea.scrollLeft;
+
+    setCaretPos({
+      top: textarea.offsetTop + coords.top - scrollTop,
+      left: textarea.offsetLeft + coords.left - scrollLeft,
+      height: coords.height
+    });
+  }, [textareaRef]);
+
+  // RAF-throttled update for smooth animation
+  const scheduleUpdate = useCallback(() => {
+    const now = performance.now();
+    const timeSinceLastUpdate = now - lastUpdateTime.current;
+
+    // Detect fast typing (updates within 35ms = ~28+ keystrokes/sec)
+    if (timeSinceLastUpdate < 35) {
+      setIsTypingFast(true);
+      if (typingTimeoutRef.current) {
+        clearTimeout(typingTimeoutRef.current);
+      }
+      typingTimeoutRef.current = setTimeout(() => {
+        setIsTypingFast(false);
+      }, 100); // Shorter recovery for snappier feel
+    }
+
+    // Cancel any pending RAF and schedule new one immediately
+    if (rafRef.current !== null) {
+      cancelAnimationFrame(rafRef.current);
+    }
+
+    rafRef.current = requestAnimationFrame(() => {
+      updateCaretPosition();
+      lastUpdateTime.current = performance.now();
+      rafRef.current = null;
+    });
+  }, [updateCaretPosition]);
+
+  // Cleanup
+  useEffect(() => {
+    return () => {
+      if (rafRef.current !== null) {
+        cancelAnimationFrame(rafRef.current);
+      }
+      if (typingTimeoutRef.current) {
+        clearTimeout(typingTimeoutRef.current);
+      }
+      cleanupCaretMirror();
+    };
+  }, []);
+
+  return { caretPos, scheduleUpdate, isTypingFast, updateCaretPosition };
 }
 
 export function PromptInput({ sendEvent }: PromptInputProps) {
   const { t } = useTranslation();
   const { prompt, setPrompt, isRunning, handleSend, handleStop } = usePromptActions(sendEvent);
   const promptRef = useRef<HTMLTextAreaElement | null>(null);
+  const [isFocused, setIsFocused] = useState(false);
+
+  const { caretPos, scheduleUpdate, isTypingFast, updateCaretPosition } = useCaretPosition(promptRef);
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    // Schedule caret update on key press
+    scheduleUpdate();
+
     if (e.key !== "Enter" || e.shiftKey) return;
     e.preventDefault();
     if (isRunning) { handleStop(); return; }
     handleSend();
   };
 
+  const handleSelect = () => {
+    // Update on selection change (covers arrow keys, mouse selection)
+    scheduleUpdate();
+  };
+
   const handleInput = (e: React.FormEvent<HTMLTextAreaElement>) => {
+    // Schedule caret update on input
+    scheduleUpdate();
+
     const target = e.currentTarget;
     target.style.height = "auto";
     const scrollHeight = target.scrollHeight;
@@ -103,6 +187,11 @@ export function PromptInput({ sendEvent }: PromptInputProps) {
       target.style.height = `${scrollHeight}px`;
       target.style.overflowY = "hidden";
     }
+  };
+
+  const handleScroll = () => {
+    // Update caret position when textarea scrolls
+    scheduleUpdate();
   };
 
   useEffect(() => {
@@ -116,21 +205,43 @@ export function PromptInput({ sendEvent }: PromptInputProps) {
       promptRef.current.style.height = `${scrollHeight}px`;
       promptRef.current.style.overflowY = "hidden";
     }
-  }, [prompt]);
+    // Update caret when prompt changes (e.g. cleared)
+    // Run content update in next tick to allow reflow
+    requestAnimationFrame(() => updateCaretPosition());
+  }, [prompt, updateCaretPosition]);
+
+  useEffect(() => {
+    const handleResize = () => scheduleUpdate();
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, [scheduleUpdate]);
 
   return (
     <section
       className="fixed bottom-0 left-0 right-5 bg-gradient-to-t from-surface via-surface to-transparent pb-6 px-4 lg:pb-8 pt-8 lg:ml-[280px] z-40"
     >
-      <div className="mx-auto flex w-full max-w-full items-end gap-3 rounded-2xl border border-ink-900/10 bg-surface px-4 py-3 shadow-card lg:max-w-3xl">
+      <div className="relative mx-auto flex w-full max-w-full items-end gap-3 rounded-2xl border border-ink-900/10 bg-surface px-4 py-3 shadow-card lg:max-w-3xl">
+        {isFocused && (
+          <div
+            className={`custom-caret ${isTypingFast ? 'typing-fast' : ''}`}
+            style={{
+              transform: `translate3d(${caretPos.left}px, ${caretPos.top}px, 0)`,
+              height: caretPos.height,
+            }}
+          />
+        )}
         <textarea
           rows={1}
-          className="flex-1 resize-none bg-transparent py-1.5 text-sm text-ink-800 placeholder:text-muted focus:outline-none"
+          className="no-caret flex-1 resize-none bg-transparent py-1.5 text-sm text-ink-800 placeholder:text-muted focus:outline-none"
           placeholder={t('input.placeholder')}
           value={prompt}
           onChange={(e) => setPrompt(e.target.value)}
           onKeyDown={handleKeyDown}
+          onSelect={handleSelect}
+          onFocus={() => { setIsFocused(true); scheduleUpdate(); }}
+          onBlur={() => setIsFocused(false)}
           onInput={handleInput}
+          onScroll={handleScroll}
           ref={promptRef}
         />
         <button

@@ -376,7 +376,7 @@ const AskUserQuestionCard = ({
 
 const ThinkingBlock = ({ text, isRunning }: { text: string, isRunning?: boolean }) => {
   const [isOpen, setIsOpen] = useState(isRunning);
-  const { t } = useTranslation();
+  // const { t } = useTranslation();
 
   useEffect(() => { if (isRunning) setIsOpen(true); }, [isRunning]);
 
