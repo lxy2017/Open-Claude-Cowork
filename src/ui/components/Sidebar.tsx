@@ -8,26 +8,21 @@ interface SidebarProps {
   connected: boolean;
   onNewSession: () => void;
   onDeleteSession: (sessionId: string) => void;
-  onOpenProviderSettings: () => void;
+  onOpenSettings: () => void;
 }
 
 export function Sidebar({
   onNewSession,
   onDeleteSession,
-  onOpenProviderSettings
+  onOpenSettings
 }: SidebarProps) {
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
   const sessions = useAppStore((state) => state.sessions);
   const activeSessionId = useAppStore((state) => state.activeSessionId);
   const setActiveSessionId = useAppStore((state) => state.setActiveSessionId);
-  const providers = useAppStore((state) => state.providers);
-  const selectedProviderId = useAppStore((state) => state.selectedProviderId);
-  const setSelectedProviderId = useAppStore((state) => state.setSelectedProviderId);
   const [resumeSessionId, setResumeSessionId] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
   const closeTimerRef = useRef<number | null>(null);
-
-  const selectedProvider = providers.find((p) => p.id === selectedProviderId);
 
   const formatCwd = (cwd?: string) => {
     if (!cwd) return t('sidebar.working_dir_unavailable');
@@ -89,37 +84,7 @@ export function Sidebar({
         + {t('sidebar.new_task')}
       </button>
 
-      {/* Provider Selector */}
-      <div className="rounded-xl border border-ink-900/10 bg-surface p-3">
-        <div className="flex items-center justify-between mb-2">
-          <span className="text-xs font-medium text-muted uppercase tracking-wide">{t('sidebar.provider_label')}</span>
-          <button
-            className="text-xs text-accent hover:text-accent-hover transition-colors"
-            onClick={onOpenProviderSettings}
-          >
-            {t('sidebar.configure')}
-          </button>
-        </div>
-        <select
-          className="w-full rounded-lg border border-ink-900/10 bg-surface-secondary px-3 py-2 text-sm text-ink-700 focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent/20"
-          value={selectedProviderId || ""}
-          onChange={(e) => setSelectedProviderId(e.target.value || null)}
-        >
-          <option value="">{t('sidebar.default_provider')}</option>
-          {providers.map((provider) => (
-            <option key={provider.id} value={provider.id}>
-              {provider.name}
-            </option>
-          ))}
-        </select>
-        {selectedProvider && (
-          <div className="mt-2 text-[10px] text-muted truncate">
-            {selectedProvider.baseUrl}
-          </div>
-        )}
-      </div>
-
-      <div className="flex flex-col gap-2 overflow-y-auto">
+      <div className="flex flex-col gap-2 overflow-y-auto flex-1">
         {sessionList.length === 0 && (
           <div className="rounded-xl border border-ink-900/5 bg-surface px-4 py-5 text-center text-xs text-muted">
             {t('sidebar.no_sessions')}
@@ -201,23 +166,17 @@ export function Sidebar({
           </Dialog.Content>
         </Dialog.Portal>
       </Dialog.Root>
-      <div className="mt-auto flex items-center justify-between border-t border-ink-900/5 pt-4">
-        <label className="flex items-center gap-2 text-xs font-medium text-muted">
-          <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2">
-            <circle cx="12" cy="12" r="10" />
-            <line x1="2" y1="12" x2="22" y2="12" />
-            <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
-          </svg>
-          {t('common.language')}
-        </label>
-        <select
-          className="rounded-lg border border-ink-900/10 bg-white px-2 py-1 text-xs text-ink-700 outline-none hover:bg-surface-tertiary transition-colors"
-          value={i18n.language}
-          onChange={(e) => i18n.changeLanguage(e.target.value)}
+      <div className="mt-auto border-t border-ink-900/5 pt-4">
+        <button
+          className="flex w-full items-center gap-2 rounded-lg px-2 py-2 text-sm text-ink-700 hover:bg-surface-tertiary transition-colors"
+          onClick={onOpenSettings}
         >
-          <option value="en">English</option>
-          <option value="zh">简体中文</option>
-        </select>
+          <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2">
+            <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.18-.08a2 2 0 0 0-2 2v.44a2 2 0 0 0 2 2h.18a2 2 0 0 1 1.73 1l.25.43a2 2 0 0 1 0 2l-.08.18a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.18.08a2 2 0 0 0 2-2v-.44a2 2 0 0 0-2-2h-.18a2 2 0 0 1-1.73-1l-.25-.43a2 2 0 0 1 0-2l.08-.18a2 2 0 0 0-2-2z" />
+            <circle cx="12" cy="12" r="3" />
+          </svg>
+          {t('settings.title')}
+        </button>
       </div>
     </aside>
   );

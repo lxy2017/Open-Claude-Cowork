@@ -79,6 +79,19 @@
     "deny_message": "User denied the request",
     "cancel_message": "User canceled the question"
   },
+  "settings": {
+    "title": "Settings",
+    "general": "General",
+    "provider": "Provider",
+    "general_title": "General Settings",
+    "provider_title": "Provider Settings",
+    "language_label": "Language",
+    "language_description": "Select the language for the user interface.",
+    "active_provider_label": "Active Provider",
+    "configured_providers_label": "Configured Providers",
+    "add_provider": "Add Provider",
+    "no_custom_providers": "No custom providers configured."
+  },
   "provider": {
     "edit_title": "Edit Provider",
     "add_title": "Add Provider",

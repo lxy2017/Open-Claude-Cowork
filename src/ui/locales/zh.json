@@ -79,6 +79,19 @@
     "deny_message": "用户拒绝了请求",
     "cancel_message": "用户取消了提问"
   },
+  "settings": {
+    "title": "设置",
+    "general": "通用",
+    "provider": "供应商",
+    "general_title": "通用设置",
+    "provider_title": "供应商设置",
+    "language_label": "语言",
+    "language_description": "选择用户界面的语言。",
+    "active_provider_label": "当前供应商",
+    "configured_providers_label": "已配置的供应商",
+    "add_provider": "添加供应商",
+    "no_custom_providers": "暂无自定义供应商配置。"
+  },
   "provider": {
     "edit_title": "编辑供应商",
     "add_title": "添加供应商",

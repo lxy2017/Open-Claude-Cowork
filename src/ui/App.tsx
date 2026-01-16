@@ -7,6 +7,7 @@ import type { ServerEvent, LlmProviderConfig } from "./types";
 import { Sidebar } from "./components/Sidebar";
 import { StartSessionModal } from "./components/StartSessionModal";
 import { ProviderModal } from "./components/ProviderModal";
+import { SettingsModal } from "./components/SettingsModal";
 import { PromptInput, usePromptActions } from "./components/PromptInput";
 import { MessageCard } from "./components/EventCard";
 import MDContent from "./render/markdown";
@@ -24,6 +25,7 @@ function App() {
   const setShowStartModal = useAppStore((s) => s.setShowStartModal);
   const showProviderModal = useAppStore((s) => s.showProviderModal);
   const setShowProviderModal = useAppStore((s) => s.setShowProviderModal);
+  const [showSettingsModal, setShowSettingsModal] = useState(false);
   const globalError = useAppStore((s) => s.globalError);
   const setGlobalError = useAppStore((s) => s.setGlobalError);
   const historyRequested = useAppStore((s) => s.historyRequested);
@@ -119,8 +121,12 @@ function App() {
     sendEvent({ type: "session.delete", payload: { sessionId } });
   }, [sendEvent]);
 
-  const handleOpenProviderSettings = useCallback(() => {
-    setEditingProvider(null);
+  const handleOpenSettings = useCallback(() => {
+    setShowSettingsModal(true);
+  }, []);
+
+  const handleEditProvider = useCallback((provider: LlmProviderConfig | null) => {
+    setEditingProvider(provider);
     setShowProviderModal(true);
   }, [setShowProviderModal]);
 
@@ -146,7 +152,7 @@ function App() {
         connected={connected}
         onNewSession={handleNewSession}
         onDeleteSession={handleDeleteSession}
-        onOpenProviderSettings={handleOpenProviderSettings}
+        onOpenSettings={handleOpenSettings}
       />
 
       <main className="flex flex-1 flex-col ml-[280px] bg-surface-cream">
@@ -239,6 +245,14 @@ function App() {
             </button>
           </div>
         </div>
+      )}
+
+      {showSettingsModal && (
+        <SettingsModal
+          onClose={() => setShowSettingsModal(false)}
+          onEditProvider={handleEditProvider}
+          onDeleteProvider={handleDeleteProvider}
+        />
       )}
 
       {showProviderModal && (
