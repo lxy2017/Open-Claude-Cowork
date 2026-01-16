@@ -1,7 +1,7 @@
 import type { LlmProviderConfig } from "../types.js";
 import { readFileSync, writeFileSync, existsSync, chmodSync } from "fs";
 import { join } from "path";
-import { app, nativeSafeStorage } from "electron";
+import { app, safeStorage } from "electron";
 import { randomUUID } from "crypto";
 
 const PROVIDERS_FILE = join(app.getPath("userData"), "providers.json");
@@ -13,7 +13,7 @@ function encryptSensitiveData(provider: LlmProviderConfig): LlmProviderConfig {
   const encrypted = { ...provider };
   if (encrypted.authToken) {
     try {
-      encrypted.authToken = nativeSafeStorage.encryptString(encrypted.authToken).toString("base64");
+      encrypted.authToken = safeStorage.encryptString(encrypted.authToken).toString("base64");
     } catch {
       // If encryption fails, keep original (not ideal but don't break functionality)
     }
@@ -28,7 +28,7 @@ function decryptSensitiveData(provider: LlmProviderConfig): LlmProviderConfig {
   const decrypted = { ...provider };
   if (decrypted.authToken) {
     try {
-      decrypted.authToken = nativeSafeStorage.decryptString(Buffer.from(decrypted.authToken, "base64"));
+      decrypted.authToken = safeStorage.decryptString(Buffer.from(decrypted.authToken, "base64"));
     } catch {
       // If decryption fails, return as-is (may be plaintext from older version)
     }

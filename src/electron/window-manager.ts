@@ -44,16 +44,19 @@ export class WindowManager {
     async initialize(): Promise<void> {
         this.mainWindow = this.createWindow();
 
-        if (isDev()) {
-            await this.mainWindow.loadURL(`http://localhost:${DEV_PORT}`);
-        } else {
-            await this.mainWindow.loadFile(getUIPath());
-        }
-
         this.mainWindow.once("ready-to-show", () => {
+            console.log('[WindowManager] Window ready-to-show');
             this.mainWindow?.show();
             this.mainWindow?.focus();
         });
+
+        if (isDev()) {
+            console.log(`[WindowManager] Loading dev URL: http://localhost:${DEV_PORT}`);
+            await this.mainWindow.loadURL(`http://localhost:${DEV_PORT}`);
+        } else {
+            console.log(`[WindowManager] Loading production UI: ${getUIPath()}`);
+            await this.mainWindow.loadFile(getUIPath());
+        }
 
         this.mainWindow.on("closed", () => {
             this.mainWindow = null;
