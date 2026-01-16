@@ -75,6 +75,7 @@ hr {
 }
 
 @media (max-width: 768px) {
+
   input,
   textarea,
   select {
@@ -117,6 +118,7 @@ input.mono {
   0% {
     transform: translateX(-120%);
   }
+
   100% {
     transform: translateX(120%);
   }
@@ -124,4 +126,65 @@ input.mono {
 
 .animate-shimmer {
   animation: shimmer 1.4s linear infinite;
+}
+
+/* Content slide-in animation */
+@keyframes content-slide-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Fade scale in animation */
+@keyframes fade-scale-in {
+  from {
+    opacity: 0;
+    transform: scale(0.98);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* Tool card enter animation */
+.tool-card-enter {
+  animation: content-slide-in 0.3s ease-out;
+}
+
+/* Result content enter animation */
+.result-enter {
+  animation: fade-scale-in 0.25s ease-out;
+}
+
+/* Staggered animation for skeleton loading */
+.stagger-fade-in>* {
+  animation: content-slide-in 0.3s ease-out both;
+}
+
+.stagger-fade-in>*:nth-child(1) {
+  animation-delay: 0ms;
+}
+
+.stagger-fade-in>*:nth-child(2) {
+  animation-delay: 50ms;
+}
+
+.stagger-fade-in>*:nth-child(3) {
+  animation-delay: 100ms;
+}
+
+.stagger-fade-in>*:nth-child(4) {
+  animation-delay: 150ms;
+}
+
+.stagger-fade-in>*:nth-child(5) {
+  animation-delay: 200ms;
 }

@@ -173,7 +173,7 @@ function App() {
           <span className="text-sm font-medium text-ink-700">{activeSession?.title}</span>
         </div>
 
-        <div className="flex-1 overflow-y-auto px-8 pb-60 pt-6 scroll-smooth">
+        <div className="flex-1 overflow-y-auto px-14 pb-60 pt-6 scroll-smooth">
           <div className="mx-auto max-w-3xl">
             {messages.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-20 text-center">
