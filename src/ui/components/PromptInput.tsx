@@ -18,6 +18,7 @@ export function usePromptActions(sendEvent: (event: ClientEvent) => void) {
   const cwd = useAppStore((state) => state.cwd);
   const activeSessionId = useAppStore((state) => state.activeSessionId);
   const sessions = useAppStore((state) => state.sessions);
+  const selectedProviderId = useAppStore((state) => state.selectedProviderId);
   const setPrompt = useAppStore((state) => state.setPrompt);
   const setPendingStart = useAppStore((state) => state.setPendingStart);
   const setGlobalError = useAppStore((state) => state.setGlobalError);
@@ -42,17 +43,26 @@ export function usePromptActions(sendEvent: (event: ClientEvent) => void) {
       }
       sendEvent({
         type: "session.start",
-        payload: { title, prompt, cwd: cwd.trim() || undefined, allowedTools: DEFAULT_ALLOWED_TOOLS }
+        payload: {
+          title,
+          prompt,
+          cwd: cwd.trim() || undefined,
+          allowedTools: DEFAULT_ALLOWED_TOOLS,
+          providerId: selectedProviderId || undefined
+        }
       });
     } else {
       if (activeSession?.status === "running") {
         setGlobalError(t('common.running_error'));
         return;
       }
-      sendEvent({ type: "session.continue", payload: { sessionId: activeSessionId, prompt } });
+      sendEvent({
+        type: "session.continue",
+        payload: { sessionId: activeSessionId, prompt, providerId: selectedProviderId || undefined }
+      });
     }
     setPrompt("");
-  }, [activeSession, activeSessionId, cwd, prompt, sendEvent, setGlobalError, setPendingStart, setPrompt]);
+  }, [activeSession, activeSessionId, cwd, prompt, selectedProviderId, sendEvent, setGlobalError, setPendingStart, setPrompt]);
 
   const handleStop = useCallback(() => {
     if (!activeSessionId) return;

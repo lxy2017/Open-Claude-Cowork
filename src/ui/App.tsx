@@ -3,9 +3,10 @@ import { useTranslation } from "react-i18next";
 import type { PermissionResult } from "@anthropic-ai/claude-agent-sdk";
 import { useIPC } from "./hooks/useIPC";
 import { useAppStore } from "./store/useAppStore";
-import type { ServerEvent } from "./types";
+import type { ServerEvent, LlmProviderConfig } from "./types";
 import { Sidebar } from "./components/Sidebar";
 import { StartSessionModal } from "./components/StartSessionModal";
+import { ProviderModal } from "./components/ProviderModal";
 import { PromptInput, usePromptActions } from "./components/PromptInput";
 import { MessageCard } from "./components/EventCard";
 import MDContent from "./render/markdown";
@@ -21,6 +22,8 @@ function App() {
   const activeSessionId = useAppStore((s) => s.activeSessionId);
   const showStartModal = useAppStore((s) => s.showStartModal);
   const setShowStartModal = useAppStore((s) => s.setShowStartModal);
+  const showProviderModal = useAppStore((s) => s.showProviderModal);
+  const setShowProviderModal = useAppStore((s) => s.setShowProviderModal);
   const globalError = useAppStore((s) => s.globalError);
   const setGlobalError = useAppStore((s) => s.setGlobalError);
   const historyRequested = useAppStore((s) => s.historyRequested);
@@ -32,6 +35,9 @@ function App() {
   const cwd = useAppStore((s) => s.cwd);
   const setCwd = useAppStore((s) => s.setCwd);
   const pendingStart = useAppStore((s) => s.pendingStart);
+  const addOrUpdateProvider = useAppStore((s) => s.addOrUpdateProvider);
+  const removeProvider = useAppStore((s) => s.removeProvider);
+  const [editingProvider, setEditingProvider] = useState<LlmProviderConfig | null>(null);
 
   // Helper function to extract partial message content
   const getPartialMessageContent = (eventMessage: any) => {
@@ -85,7 +91,10 @@ function App() {
   const isRunning = activeSession?.status === "running";
 
   useEffect(() => {
-    if (connected) sendEvent({ type: "session.list" });
+    if (connected) {
+      sendEvent({ type: "session.list" });
+      sendEvent({ type: "provider.list" });
+    }
   }, [connected, sendEvent]);
 
   useEffect(() => {
@@ -110,6 +119,21 @@ function App() {
     sendEvent({ type: "session.delete", payload: { sessionId } });
   }, [sendEvent]);
 
+  const handleOpenProviderSettings = useCallback(() => {
+    setEditingProvider(null);
+    setShowProviderModal(true);
+  }, [setShowProviderModal]);
+
+  const handleSaveProvider = useCallback((provider: LlmProviderConfig) => {
+    addOrUpdateProvider(provider);
+    sendEvent({ type: "provider.save", payload: { provider } });
+  }, [addOrUpdateProvider, sendEvent]);
+
+  const handleDeleteProvider = useCallback((providerId: string) => {
+    removeProvider(providerId);
+    sendEvent({ type: "provider.delete", payload: { providerId } });
+  }, [removeProvider, sendEvent]);
+
   const handlePermissionResult = useCallback((toolUseId: string, result: PermissionResult) => {
     if (!activeSessionId) return;
     sendEvent({ type: "permission.response", payload: { sessionId: activeSessionId, toolUseId, result } });
@@ -122,6 +146,7 @@ function App() {
         connected={connected}
         onNewSession={handleNewSession}
         onDeleteSession={handleDeleteSession}
+        onOpenProviderSettings={handleOpenProviderSettings}
       />
 
       <main className="flex flex-1 flex-col ml-[280px] bg-surface-cream">
@@ -214,6 +239,18 @@ function App() {
             </button>
           </div>
         </div>
+      )}
+
+      {showProviderModal && (
+        <ProviderModal
+          provider={editingProvider}
+          onSave={handleSaveProvider}
+          onDelete={handleDeleteProvider}
+          onClose={() => {
+            setShowProviderModal(false);
+            setEditingProvider(null);
+          }}
+        />
       )}
     </div>
   );
