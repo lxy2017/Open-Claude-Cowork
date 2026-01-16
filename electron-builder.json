@@ -24,5 +24,12 @@
             "portable",
             "msi"
         ]
-    }
+    },
+    "publish": [
+        {
+            "provider": "github",
+            "owner": "lxy2017",
+            "repo": "Open-Claude-Cowork"
+        }
+    ]
 }
