@@ -19,8 +19,7 @@ export function pollResources(mainWindow: BrowserWindow): ReturnType<typeof setI
     const intervalId = setInterval(async () => {
         // Check if window is destroyed BEFORE processing
         if (!mainWindow || mainWindow.isDestroyed()) {
-            clearInterval(intervalId);
-            activePollingInterval = null;
+            stopPolling();
             return;
         }
 
@@ -32,6 +31,8 @@ export function pollResources(mainWindow: BrowserWindow): ReturnType<typeof setI
             // Double-check window is still valid before sending
             if (!mainWindow.isDestroyed()) {
                 ipcWebContentsSend("statistics", mainWindow.webContents, { cpuUsage, ramUsage, storageData: storageData.usage });
+            } else {
+                stopPolling();
             }
         } catch (error) {
             console.error('[Polling] Error during resource poll:', error);
@@ -46,9 +47,15 @@ export function pollResources(mainWindow: BrowserWindow): ReturnType<typeof setI
 export function cleanupPolling(intervalId: ReturnType<typeof setInterval> | null): void {
     if (intervalId) {
         clearInterval(intervalId);
-        intervalId = null;
     }
     // Also clear the active interval reference
+    if (activePollingInterval) {
+        clearInterval(activePollingInterval);
+        activePollingInterval = null;
+    }
+}
+
+export function stopPolling(): void {
     if (activePollingInterval) {
         clearInterval(activePollingInterval);
         activePollingInterval = null;
@@ -87,5 +94,3 @@ function getStorageData() {
         usage: 1 - free / total
     }
 }
-
-

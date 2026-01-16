@@ -1,18 +1,44 @@
-import { app, ipcMain, dialog } from "electron"
+import { app, ipcMain, dialog, globalShortcut } from "electron"
+import { execSync } from "child_process";
 import { ipcMainHandle, isDev, DEV_PORT } from "./util.js";
-import { getPreloadPath, getUIPath } from "./pathResolver.js";
-import { getStaticData, pollResources, cleanupPolling } from "./test.js";
-import { handleClientEvent, sessions } from "./ipc-handlers.js";
+import { getPreloadPath } from "./pathResolver.js";
+import { getStaticData, pollResources, stopPolling } from "./test.js";
+import { handleClientEvent, sessions, cleanupAllSessions } from "./ipc-handlers.js";
 import { generateSessionTitle } from "./libs/util.js";
 import type { ClientEvent } from "./types.js";
 import { WindowManager } from "./window-manager.js";
 import "./libs/claude-settings.js";
 import { existsSync } from "fs";
 
-// Track polling interval for cleanup
-let pollingIntervalId: ReturnType<typeof setInterval> | null = null;
-
 const windowManager = WindowManager.getInstance();
+
+// Cleanup logic from PR #15
+let cleanupComplete = false;
+
+function killViteDevServer(): void {
+    if (!isDev()) return;
+    try {
+        console.log('[Main] Killing Vite dev server...');
+        if (process.platform === 'win32') {
+            execSync(`for /f "tokens=5" %a in ('netstat -ano ^| findstr :${DEV_PORT}') do taskkill /PID %a /F`, { stdio: 'ignore', shell: 'cmd.exe' });
+        } else {
+            execSync(`lsof -ti:${DEV_PORT} | xargs kill -9 2>/dev/null || true`, { stdio: 'ignore' });
+        }
+    } catch (e) {
+        // Process may already be dead
+    }
+}
+
+function cleanup(): void {
+    if (cleanupComplete) return;
+    cleanupComplete = true;
+
+    console.log('[Main] Running cleanup...');
+    globalShortcut.unregisterAll();
+    stopPolling();
+    cleanupAllSessions();
+    killViteDevServer();
+}
 
 // Single instance lock
 const gotTheLock = app.requestSingleInstanceLock();
@@ -45,7 +71,7 @@ app.on("ready", async () => {
             console.log('[Main] Loading dev URL:', `http://localhost:${DEV_PORT}`);
         }
 
-        pollingIntervalId = pollResources(win);
+        pollResources(win);
 
         // IPC handlers
         ipcMainHandle("getStaticData", () => {
@@ -77,10 +103,9 @@ app.on("ready", async () => {
             return result.filePaths[0];
         });
 
-        // Window lifecycle handlers
-        win.on("closed", () => {
-            cleanupPolling(pollingIntervalId);
-            pollingIntervalId = null;
+        // Register global shortcuts
+        globalShortcut.register('CommandOrControl+Q', () => {
+            app.quit();
         });
 
         console.log('App ready');
@@ -94,16 +119,14 @@ app.on("ready", async () => {
     }
 });
 
-// Window lifecycle - Mac
+// Window lifecycle handlers
+app.on("before-quit", cleanup);
+app.on("will-quit", cleanup);
+
 app.on("window-all-closed", () => {
     if (process.platform !== "darwin") {
-        cleanupPolling(pollingIntervalId);
         app.quit();
     }
-});
-
-app.on("before-quit", () => {
-    cleanupPolling(pollingIntervalId);
 });
 
 app.on("activate", () => {
@@ -113,3 +136,12 @@ app.on("activate", () => {
         windowManager.focus();
     }
 });
+
+// Signal handling
+function handleSignal(): void {
+    app.quit();
+}
+
+process.on("SIGTERM", handleSignal);
+process.on("SIGINT", handleSignal);
+process.on("SIGHUP", handleSignal);
