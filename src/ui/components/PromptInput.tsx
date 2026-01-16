@@ -32,9 +32,10 @@ export function usePromptActions(sendEvent: (event: ClientEvent) => void) {
         setPendingStart(true);
         title = await window.electron.generateSessionTitle(prompt);
       } catch (error) {
-        console.error(error);
+        console.error("Failed to generate session title:", error);
         setPendingStart(false);
-        setGlobalError("Failed to get session title.");
+        const errorMessage = error instanceof Error ? error.message : String(error);
+        setGlobalError(`Failed to get session title: ${errorMessage}`);
         return;
       }
       sendEvent({

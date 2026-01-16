@@ -22,8 +22,28 @@ app.on("ready", () => {
         trafficLightPosition: { x: 15, y: 18 }
     });
 
-    if (isDev()) mainWindow.loadURL(`http://localhost:${DEV_PORT}`)
-    else mainWindow.loadFile(getUIPath());
+    if (isDev()) {
+        const devUrl = `http://localhost:${DEV_PORT}`;
+        console.log('[Main] Loading dev URL:', devUrl);
+        mainWindow.loadURL(devUrl);
+        mainWindow.webContents.openDevTools();
+
+        // Add page load event listeners for debugging
+        mainWindow.webContents.on('did-start-loading', () => {
+            console.log('[Main] Page started loading');
+        });
+        mainWindow.webContents.on('did-finish-load', () => {
+            console.log('[Main] Page finished loading');
+        });
+        mainWindow.webContents.on('did-fail-load', (event, errorCode, errorDescription) => {
+            console.error('[Main] Page failed to load:', errorCode, errorDescription);
+        });
+        mainWindow.webContents.on('dom-ready', () => {
+            console.log('[Main] DOM is ready');
+        });
+    } else {
+        mainWindow.loadFile(getUIPath());
+    }
 
     pollResources(mainWindow);
 
@@ -52,11 +72,11 @@ app.on("ready", () => {
         const result = await dialog.showOpenDialog(mainWindow, {
             properties: ['openDirectory']
         });
-        
+
         if (result.canceled) {
             return null;
         }
-        
+
         return result.filePaths[0];
     });
 })

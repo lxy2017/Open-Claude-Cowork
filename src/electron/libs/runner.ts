@@ -1,7 +1,7 @@
 import { query, type SDKMessage, type PermissionResult } from "@anthropic-ai/claude-agent-sdk";
 import type { ServerEvent } from "../types.js";
 import type { Session } from "./session-store.js";
-import { claudeCodePath, enhancedEnv} from "./util.js";
+import { claudeCodePath, getEnhancedEnv, nodePath } from "./util.js";
 
 
 export type RunnerOptions = {
@@ -46,8 +46,9 @@ export async function runClaude(options: RunnerOptions): Promise<RunnerHandle> {
           cwd: session.cwd ?? DEFAULT_CWD,
           resume: resumeSessionId,
           abortController,
-          env: enhancedEnv,
+          env: getEnhancedEnv(),
           pathToClaudeCodeExecutable: claudeCodePath,
+          executable: nodePath as any,
           permissionMode: "bypassPermissions",
           includePartialMessages: true,
           allowDangerouslySkipPermissions: true,
