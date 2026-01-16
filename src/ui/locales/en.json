@@ -13,7 +13,10 @@
     "resume_claude": "Resume in Claude Code",
     "resume_title": "Resume",
     "copy_command": "Copy resume command",
-    "close_dialog": "Close dialog"
+    "close_dialog": "Close dialog",
+    "provider_label": "Provider",
+    "configure": "Configure",
+    "default_provider": "Default (Claude Code)"
   },
   "modal": {
     "title": "Start Session",
@@ -75,5 +78,31 @@
     "claude_wants_to_use": "Claude wants to use:",
     "deny_message": "User denied the request",
     "cancel_message": "User canceled the question"
+  },
+  "provider": {
+    "edit_title": "Edit Provider",
+    "add_title": "Add Provider",
+    "close": "Close",
+    "description": "Configure a custom LLM provider compatible with Anthropic's API format.",
+    "name_label": "Provider Name",
+    "name_placeholder": "My Custom Provider",
+    "base_url_label": "Base URL",
+    "base_url_placeholder": "https://api.anthropic.com/v1",
+    "base_url_hint": "The API endpoint URL (e.g., https://api.anthropic.com/v1 for Anthropic, or custom provider URL)",
+    "auth_token_label": "Auth Token",
+    "auth_token_placeholder": "sk-ant-api03-...",
+    "auth_token_hint": "API key or auth token for the provider",
+    "model_config_title": "Model Configuration (Optional)",
+    "default_model_label": "Default Model",
+    "default_model_placeholder": "claude-sonnet-4-20250514",
+    "opus_model_label": "Opus Model",
+    "opus_model_placeholder": "claude-opus-4",
+    "sonnet_model_label": "Sonnet Model",
+    "sonnet_model_placeholder": "claude-sonnet-4",
+    "haiku_model_label": "Haiku Model",
+    "haiku_model_placeholder": "claude-haiku-4",
+    "delete_button": "Delete",
+    "save_button": "Save Changes",
+    "add_button": "Add Provider"
   }
 }

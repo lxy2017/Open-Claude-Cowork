@@ -78,7 +78,7 @@ export function Sidebar({
 
   return (
     <aside className="fixed inset-y-0 left-0 flex h-full w-[280px] flex-col gap-4 border-r border-ink-900/5 bg-[#FAF9F6] px-4 pb-4 pt-12">
-      <div 
+      <div
         className="absolute top-0 left-0 right-0 h-12"
         style={{ WebkitAppRegion: 'drag' } as React.CSSProperties}
       />
@@ -92,12 +92,12 @@ export function Sidebar({
       {/* Provider Selector */}
       <div className="rounded-xl border border-ink-900/10 bg-surface p-3">
         <div className="flex items-center justify-between mb-2">
-          <span className="text-xs font-medium text-muted uppercase tracking-wide">Provider</span>
+          <span className="text-xs font-medium text-muted uppercase tracking-wide">{t('sidebar.provider_label')}</span>
           <button
             className="text-xs text-accent hover:text-accent-hover transition-colors"
             onClick={onOpenProviderSettings}
           >
-            Configure
+            {t('sidebar.configure')}
           </button>
         </div>
         <select
@@ -105,7 +105,7 @@ export function Sidebar({
           value={selectedProviderId || ""}
           onChange={(e) => setSelectedProviderId(e.target.value || null)}
         >
-          <option value="">Default (Claude Code)</option>
+          <option value="">{t('sidebar.default_provider')}</option>
           {providers.map((provider) => (
             <option key={provider.id} value={provider.id}>
               {provider.name}

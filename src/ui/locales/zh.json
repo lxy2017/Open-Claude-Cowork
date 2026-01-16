@@ -13,7 +13,10 @@
     "resume_claude": "在终端中继续",
     "resume_title": "继续会话",
     "copy_command": "复制继续命令",
-    "close_dialog": "关闭对话框"
+    "close_dialog": "关闭对话框",
+    "provider_label": "供应商",
+    "configure": "配置",
+    "default_provider": "默认 (Claude Code)"
   },
   "modal": {
     "title": "启动会话",
@@ -75,5 +78,31 @@
     "claude_wants_to_use": "助手请求使用:",
     "deny_message": "用户拒绝了请求",
     "cancel_message": "用户取消了提问"
+  },
+  "provider": {
+    "edit_title": "编辑供应商",
+    "add_title": "添加供应商",
+    "close": "关闭",
+    "description": "配置与 Anthropic API 格式兼容的自定义 LLM 供应商。",
+    "name_label": "供应商名称",
+    "name_placeholder": "我的自定义供应商",
+    "base_url_label": "Base URL",
+    "base_url_placeholder": "https://api.anthropic.com/v1",
+    "base_url_hint": "API 端点 URL（例如 Anthropic 的 https://api.anthropic.com/v1，或自定义供应商 URL）",
+    "auth_token_label": "认证令牌",
+    "auth_token_placeholder": "sk-ant-api03-...",
+    "auth_token_hint": "供应商的 API 密钥或认证令牌",
+    "model_config_title": "模型配置（可选）",
+    "default_model_label": "默认模型",
+    "default_model_placeholder": "claude-sonnet-4-20250514",
+    "opus_model_label": "Opus 模型",
+    "opus_model_placeholder": "claude-opus-4",
+    "sonnet_model_label": "Sonnet 模型",
+    "sonnet_model_placeholder": "claude-sonnet-4",
+    "haiku_model_label": "Haiku 模型",
+    "haiku_model_placeholder": "claude-haiku-4",
+    "delete_button": "删除",
+    "save_button": "保存更改",
+    "add_button": "添加供应商"
   }
 }

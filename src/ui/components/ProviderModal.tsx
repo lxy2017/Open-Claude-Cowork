@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import type { LlmProviderConfig } from "../types";
 
 interface ProviderModalProps {
@@ -9,6 +10,7 @@ interface ProviderModalProps {
 }
 
 export function ProviderModal({ provider, onSave, onDelete, onClose }: ProviderModalProps) {
+  const { t } = useTranslation();
   const [name, setName] = useState(provider?.name || "");
   const [baseUrl, setBaseUrl] = useState(provider?.baseUrl || "");
   const [authToken, setAuthToken] = useState(provider?.authToken || "");
@@ -68,12 +70,12 @@ export function ProviderModal({ provider, onSave, onDelete, onClose }: ProviderM
       <div className="w-full max-w-lg rounded-2xl border border-ink-900/5 bg-surface p-6 shadow-elevated max-h-[90vh] overflow-y-auto">
         <div className="flex items-center justify-between mb-4">
           <div className="text-base font-semibold text-ink-800">
-            {provider ? "Edit Provider" : "Add Provider"}
+            {provider ? t('provider.edit_title') : t('provider.add_title')}
           </div>
           <button
             className="rounded-full p-1.5 text-muted hover:bg-surface-tertiary hover:text-ink-700 transition-colors"
             onClick={onClose}
-            aria-label="Close"
+            aria-label={t('provider.close')}
           >
             <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2">
               <path d="M18 6L6 18M6 6l12 12" />
@@ -82,15 +84,15 @@ export function ProviderModal({ provider, onSave, onDelete, onClose }: ProviderM
         </div>
 
         <p className="mt-2 text-sm text-muted mb-4">
-          Configure a custom LLM provider compatible with Anthropic's API format.
+          {t('provider.description')}
         </p>
 
         <div className="grid gap-4">
           <label className="grid gap-1.5">
-            <span className="text-xs font-medium text-muted">Provider Name</span>
+            <span className="text-xs font-medium text-muted">{t('provider.name_label')}</span>
             <input
               className="rounded-xl border border-ink-900/10 bg-surface-secondary px-4 py-2.5 text-sm text-ink-800 placeholder:text-muted-light focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent/20 transition-colors"
-              placeholder="My Custom Provider"
+              placeholder={t('provider.name_placeholder')}
               value={name}
               onChange={(e) => setName(e.target.value)}
               required
@@ -98,73 +100,73 @@ export function ProviderModal({ provider, onSave, onDelete, onClose }: ProviderM
           </label>
 
           <label className="grid gap-1.5">
-            <span className="text-xs font-medium text-muted">Base URL</span>
+            <span className="text-xs font-medium text-muted">{t('provider.base_url_label')}</span>
             <input
               className="rounded-xl border border-ink-900/10 bg-surface-secondary px-4 py-2.5 text-sm text-ink-800 placeholder:text-muted-light focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent/20 transition-colors"
-              placeholder="https://api.anthropic.com/v1"
+              placeholder={t('provider.base_url_placeholder')}
               value={baseUrl}
               onChange={(e) => setBaseUrl(e.target.value)}
               required
             />
             <span className="text-[10px] text-muted-light">
-              The API endpoint URL (e.g., https://api.anthropic.com/v1 for Anthropic, or custom provider URL)
+              {t('provider.base_url_hint')}
             </span>
           </label>
 
           <label className="grid gap-1.5">
-            <span className="text-xs font-medium text-muted">Auth Token</span>
+            <span className="text-xs font-medium text-muted">{t('provider.auth_token_label')}</span>
             <input
               className="rounded-xl border border-ink-900/10 bg-surface-secondary px-4 py-2.5 text-sm text-ink-800 placeholder:text-muted-light focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent/20 transition-colors"
-              placeholder="sk-ant-api03-..."
+              placeholder={t('provider.auth_token_placeholder')}
               type="password"
               value={authToken}
               onChange={(e) => setAuthToken(e.target.value)}
               required
             />
             <span className="text-[10px] text-muted-light">
-              API key or auth token for the provider
+              {t('provider.auth_token_hint')}
             </span>
           </label>
 
           <div className="border-t border-ink-900/10 pt-4 mt-2">
-            <span className="text-xs font-medium text-muted mb-3 block">Model Configuration (Optional)</span>
+            <span className="text-xs font-medium text-muted mb-3 block">{t('provider.model_config_title')}</span>
 
             <label className="grid gap-1.5 mb-3">
-              <span className="text-xs font-medium text-muted-light">Default Model</span>
+              <span className="text-xs font-medium text-muted-light">{t('provider.default_model_label')}</span>
               <input
                 className="rounded-xl border border-ink-900/10 bg-surface-secondary px-4 py-2.5 text-sm text-ink-800 placeholder:text-muted-light focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent/20 transition-colors"
-                placeholder="claude-sonnet-4-20250514"
+                placeholder={t('provider.default_model_placeholder')}
                 value={defaultModel}
                 onChange={(e) => setDefaultModel(e.target.value)}
               />
             </label>
 
-            <div className="grid grid-cols-3 gap-3">
+            <div className="grid grid-cols-1 gap-3">
               <label className="grid gap-1.5">
-                <span className="text-xs font-medium text-muted-light">Opus Model</span>
+                <span className="text-xs font-medium text-muted-light">{t('provider.opus_model_label')}</span>
                 <input
-                  className="rounded-xl border border-ink-900/10 bg-surface-secondary px-3 py-2 text-sm text-ink-800 placeholder:text-muted-light focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent/20 transition-colors"
-                  placeholder="claude-opus-4"
+                  className="w-full rounded-xl border border-ink-900/10 bg-surface-secondary px-3 py-2 text-sm text-ink-800 placeholder:text-muted-light focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent/20 transition-colors"
+                  placeholder={t('provider.opus_model_placeholder')}
                   value={opusModel}
                   onChange={(e) => setOpusModel(e.target.value)}
                 />
               </label>
 
               <label className="grid gap-1.5">
-                <span className="text-xs font-medium text-muted-light">Sonnet Model</span>
+                <span className="text-xs font-medium text-muted-light">{t('provider.sonnet_model_label')}</span>
                 <input
-                  className="rounded-xl border border-ink-900/10 bg-surface-secondary px-3 py-2 text-sm text-ink-800 placeholder:text-muted-light focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent/20 transition-colors"
-                  placeholder="claude-sonnet-4"
+                  className="w-full rounded-xl border border-ink-900/10 bg-surface-secondary px-3 py-2 text-sm text-ink-800 placeholder:text-muted-light focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent/20 transition-colors"
+                  placeholder={t('provider.sonnet_model_placeholder')}
                   value={sonnetModel}
                   onChange={(e) => setSonnetModel(e.target.value)}
                 />
               </label>
 
               <label className="grid gap-1.5">
-                <span className="text-xs font-medium text-muted-light">Haiku Model</span>
+                <span className="text-xs font-medium text-muted-light">{t('provider.haiku_model_label')}</span>
                 <input
-                  className="rounded-xl border border-ink-900/10 bg-surface-secondary px-3 py-2 text-sm text-ink-800 placeholder:text-muted-light focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent/20 transition-colors"
-                  placeholder="claude-haiku-4"
+                  className="w-full rounded-xl border border-ink-900/10 bg-surface-secondary px-3 py-2 text-sm text-ink-800 placeholder:text-muted-light focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent/20 transition-colors"
+                  placeholder={t('provider.haiku_model_placeholder')}
                   value={haikuModel}
                   onChange={(e) => setHaikuModel(e.target.value)}
                 />
@@ -179,7 +181,7 @@ export function ProviderModal({ provider, onSave, onDelete, onClose }: ProviderM
                 onClick={handleDelete}
                 className="flex-1 rounded-full border border-red-200 bg-red-50 px-5 py-3 text-sm font-medium text-red-600 hover:bg-red-100 transition-colors"
               >
-                Delete
+                {t('provider.delete_button')}
               </button>
             )}
             <button
@@ -188,7 +190,7 @@ export function ProviderModal({ provider, onSave, onDelete, onClose }: ProviderM
               disabled={!name.trim() || !baseUrl.trim() || !authToken.trim()}
               className="flex-1 flex justify-center rounded-full bg-accent px-5 py-3 text-sm font-medium text-white shadow-soft hover:bg-accent-hover transition-colors disabled:cursor-not-allowed disabled:opacity-50"
             >
-              {provider ? "Save Changes" : "Add Provider"}
+              {provider ? t('provider.save_button') : t('provider.add_button')}
             </button>
           </div>
         </div>
